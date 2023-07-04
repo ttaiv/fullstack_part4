@@ -5,5 +5,5 @@ Content-Type: application/json
   "title": "hyvä blogi",
   "author": "hyvä author",
   "url": "sembe.com",
-  "likes": 17
+  "likes": 19
 }
