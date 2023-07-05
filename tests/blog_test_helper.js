@@ -1,3 +1,5 @@
+const Blog = require('../models/blog');
+
 const initialBlogs = [
   {
     _id: '5a422a851b54a676234d17f7',
@@ -25,4 +27,11 @@ const initialBlogs = [
   },
 ];
 
-module.exports = { initialBlogs };
+const createNonExistingId = async () => {
+  const blog = new Blog({ title: 'this will not be saved' });
+  // eslint-disable-next-line no-underscore-dangle
+  const id = blog._id.toString();
+  return id;
+};
+
+module.exports = { initialBlogs, createNonExistingId };

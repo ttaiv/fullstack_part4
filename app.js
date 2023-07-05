@@ -5,7 +5,7 @@ const morgan = require('morgan');
 const config = require('./utils/config');
 const logger = require('./utils/logger');
 const blogRouter = require('./controllers/blog');
-const unknownEndpoint = require('./utils/middleware');
+const { unknownEndpoint } = require('./utils/middleware');
 
 mongoose.set('strictQuery', false);
 mongoose.connect(config.MONGODB_URI)

@@ -1,5 +1,6 @@
 const blogRouter = require('express').Router();
 const Blog = require('../models/blog');
+const { errorHandler } = require('../utils/middleware');
 
 blogRouter.get('/', (request, response) => {
   Blog
@@ -9,13 +10,16 @@ blogRouter.get('/', (request, response) => {
     });
 });
 
-blogRouter.post('/', (request, response) => {
+blogRouter.post('/', (request, response, next) => {
   const blog = new Blog(request.body);
   blog
     .save()
     .then(result => {
       response.status(201).json(result);
-    });
+    })
+    .catch(error => next(error));
 });
+
+blogRouter.use(errorHandler);
 
 module.exports = blogRouter;
