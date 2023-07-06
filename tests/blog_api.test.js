@@ -106,6 +106,49 @@ describe('Testing HTTP DELETE', () => {
   });
 });
 
+describe('Testing HTTP PUT', () => {
+  const idToUpdate = helper.initialBlogs[0]._id;
+  test('Replaces existing blog with a valid blog', async () => {
+    const newBlog = {
+      title: 'Nice blogpost',
+      author: 'Me',
+      url: 'https://niceplace.com',
+      likes: 11,
+    };
+    await api
+      .put(`/api/blogs/${idToUpdate}`)
+      .send(newBlog)
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+    const response = await api.get('/api/blogs');
+    expect(response.body).toHaveLength(helper.initialBlogs.length);
+    expect(response.body.map(blog => blog.title)).toContain(newBlog.title);
+  });
+  test('Trying to add blog without title or url results to 400 bad request', async () => {
+    const withoutTitle = {
+      author: 'Me',
+      url: 'https://niceplace.com',
+      likes: 1,
+    };
+    const withoutUrl = {
+      title: 'Nice blogpost',
+      author: 'Me',
+      likes: 2,
+    };
+    const withoutBoth = {
+      author: 'Me',
+      likes: 3,
+    };
+    const faultyBlogs = [withoutTitle, withoutUrl, withoutBoth];
+    await Promise.all(faultyBlogs.map(async blog => {
+      await api
+        .put(`/api/blogs/${idToUpdate}`)
+        .send(blog)
+        .expect(400);
+    }));
+  });
+});
+
 afterAll(async () => {
   await mongoose.connection.close();
 });
