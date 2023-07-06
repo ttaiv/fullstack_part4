@@ -108,13 +108,13 @@ describe('Testing HTTP DELETE', () => {
 
 describe('Testing HTTP PUT', () => {
   const idToUpdate = helper.initialBlogs[0]._id;
+  const newBlog = {
+    title: 'Nice blogpost',
+    author: 'Me',
+    url: 'https://niceplace.com',
+    likes: 11,
+  };
   test('Replaces existing blog with a valid blog', async () => {
-    const newBlog = {
-      title: 'Nice blogpost',
-      author: 'Me',
-      url: 'https://niceplace.com',
-      likes: 11,
-    };
     await api
       .put(`/api/blogs/${idToUpdate}`)
       .send(newBlog)
@@ -146,6 +146,13 @@ describe('Testing HTTP PUT', () => {
         .send(blog)
         .expect(400);
     }));
+  });
+  test('Trying to update nonexistent id leads to error 404', async () => {
+    const id = await helper.createNonExistingId();
+    await api
+      .put(`/api/blogs/${id}`)
+      .send(newBlog)
+      .expect(404);
   });
 });
 
