@@ -20,6 +20,11 @@ blogRouter.post('/', (request, response, next) => {
     .catch(error => next(error));
 });
 
+blogRouter.delete('/:id', async (request, response) => {
+  await Blog.findByIdAndDelete(request.params.id);
+  response.status(204).end();
+});
+
 blogRouter.use(errorHandler);
 
 module.exports = blogRouter;

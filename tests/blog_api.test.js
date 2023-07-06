@@ -84,6 +84,28 @@ test('default value for likes is zero', async () => {
   expect(newBlogFromDB.likes).toEqual(0);
 });
 
+describe('Testing HTTP DELETE', () => {
+  test('Deleting reduces amount of notes in the database and deletes correct blog', async () => {
+    const idToDelete = '5a422a851b54a676234d17f7'; // id of one of the initial notes
+    await api
+      .delete(`/api/blogs/${idToDelete}`)
+      .expect(204);
+
+    const response = await api.get('/api/blogs');
+    expect(response.body).toHaveLength(helper.initialBlogs.length - 1);
+    const ids = response.body.map(blog => blog.id);
+    expect(ids).not.toContain(idToDelete);
+  });
+  test('Trying to delete blog that does not exist does not do anything', async () => {
+    const id = await helper.createNonExistingId();
+    await api
+      .delete(`/api/blogs/${id}`)
+      .expect(204);
+    const response = await api.get('/api/blogs');
+    expect(response.body).toHaveLength(helper.initialBlogs.length);
+  });
+});
+
 afterAll(async () => {
   await mongoose.connection.close();
 });
