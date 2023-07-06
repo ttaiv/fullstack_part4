@@ -32,17 +32,18 @@ blogRouter.put('/:id', async (request, response, next) => {
     url: request.body.url,
     likes: request.body.likes,
   };
-  (new Blog(newBlog)).validate()
-    .then(async () => {
-      const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, newBlog, { new: true });
-      console.log('new blog is', newBlog, 'updated blog is', updatedBlog);
-      if (!updatedBlog) {
-        response.status(404).end();
-      } else {
-        response.json(updatedBlog);
-      }
-    })
-    .catch(error => next(error));
+  try {
+    await (new Blog(newBlog)).validate();
+    const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, newBlog, { new: true });
+    console.log('new blog is', newBlog, 'updated blog is', updatedBlog);
+    if (!updatedBlog) {
+      response.status(404).end();
+    } else {
+      response.json(updatedBlog);
+    }
+  } catch (expection) {
+    next(expection);
+  }
 });
 
 blogRouter.use(errorHandler);
