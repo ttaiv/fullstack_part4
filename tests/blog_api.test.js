@@ -1,7 +1,12 @@
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-param-reassign */
+const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const supertest = require('supertest');
 const app = require('../app');
 const Blog = require('../models/blog');
+const User = require('../models/user');
 const helper = require('./blog_test_helper');
 
 const api = supertest(app);
@@ -9,7 +14,25 @@ const api = supertest(app);
 beforeEach(async () => {
   await Blog.deleteMany({});
   await Blog.insertMany(helper.initialBlogs);
+  await User.deleteMany({});
+  // Hash the passwords of initial users
+  for (const user of helper.initialUsers) {
+    const passwordHash = await bcrypt.hash(user.password, 10);
+    user.passwordHash = passwordHash;
+    delete user.password;
+  }
+  await User.insertMany(helper.initialUsers);
 });
+
+const loginAndGetToken = async (username, password) => {
+  const credentials = { username, password };
+  const response = await api
+    .post('/api/login')
+    .send(credentials)
+    .expect(200);
+
+  return response.body.token;
+};
 
 describe('Testing HTTP GET /api/blogs', () => {
   test('HTTP GET returns correct number of blogs in JSON form', async () => {
@@ -32,8 +55,11 @@ describe('Testing HTTP POST /api/blogs', () => {
       url: 'https://niceplace.com',
       likes: 11,
     };
+    const user = helper.initialUsers[0];
+    const token = await loginAndGetToken(user.username, 'test1password');
     await api.post('/api/blogs')
       .send(newBlog)
+      .set('Authorization', `Bearer ${token}`)
       .expect(201)
       .expect('Content-Type', /application\/json/);
 

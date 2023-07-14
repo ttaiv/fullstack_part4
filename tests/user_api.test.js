@@ -22,7 +22,7 @@ describe('Testing creating new user', () => {
       .send(user)
       .expect(400);
 
-    expect(response.body).toEqual({ error: 'invalid password' });
+    expect(response.body).toEqual({ error: 'password must be 3 characters long' });
     expect(helper.usersInDb.length).toEqual(0);
   });
   test('Missing password or username causes status 400', async () => {
@@ -42,7 +42,7 @@ describe('Testing creating new user', () => {
       .post('/api/users')
       .send(withoutUsername)
       .expect(400);
-    expect(response1.body.error).toContain('invalid password');
+    expect(response1.body.error).toContain('password must be 3 characters long');
     expect(response2.body.error).toContain('validation failed');
   });
   test('Valid user can be added', async () => {

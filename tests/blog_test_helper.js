@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Blog = require('../models/blog');
 
 const initialBlogs = [
@@ -27,6 +28,21 @@ const initialBlogs = [
   },
 ];
 
+const initialUsers = [
+  {
+    username: 'test1',
+    password: 'test1password',
+    name: 'test1name',
+    _id: new mongoose.Types.ObjectId(),
+  },
+  {
+    username: 'test2',
+    password: 'test2password',
+    name: 'test2name',
+    _id: new mongoose.Types.ObjectId(),
+  },
+];
+
 const createNonExistingId = async () => {
   const blog = new Blog({ title: 'this will not be saved' });
   // eslint-disable-next-line no-underscore-dangle
@@ -34,4 +50,4 @@ const createNonExistingId = async () => {
   return id;
 };
 
-module.exports = { initialBlogs, createNonExistingId };
+module.exports = { initialBlogs, createNonExistingId, initialUsers };

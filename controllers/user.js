@@ -6,7 +6,7 @@ const { isValid } = require('../utils/password_helper');
 userRouter.post('/', async (request, response) => {
   const { username, name, password } = request.body;
   if (!isValid(password)) {
-    response.status(400).json({ error: 'invalid password' });
+    response.status(400).json({ error: 'password must be 3 characters long' });
   } else {
     const passwordHash = await bcrypt.hash(password, 10);
     const user = new User({

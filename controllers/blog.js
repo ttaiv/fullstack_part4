@@ -27,12 +27,27 @@ blogRouter.post('/', userExtractor, async (request, response) => {
   const blogId = savedBlog._id;
   user.blogs = user.blogs.concat(blogId);
   await user.save();
-  response.json(savedBlog);
+  response.status(201).json(savedBlog);
 });
 
-blogRouter.delete('/:id', async (request, response) => {
-  await Blog.findByIdAndDelete(request.params.id);
-  response.status(204).end();
+blogRouter.delete('/:id', userExtractor, async (request, response) => {
+  const { user } = request;
+  if (!user) {
+    return;
+  }
+  const idToDelete = request.params.id;
+  const blogToDelete = await Blog.findById(idToDelete);
+  if (!blogToDelete) {
+    response.status(204).end();
+    return;
+  }
+  const blogCreatorId = blogToDelete.user;
+  if (user._id.toString() === blogCreatorId.toString()) {
+    await blogToDelete.deleteOne();
+    response.status(204).end();
+  } else {
+    response.status(401).json({ error: 'No rights to delete this blog' });
+  }
 });
 
 blogRouter.put('/:id', async (request, response) => {
