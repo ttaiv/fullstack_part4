@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const Blog = require('../models/blog');
 
 const initialBlogs = [
   {
@@ -43,11 +42,4 @@ const initialUsers = [
   },
 ];
 
-const createNonExistingId = async () => {
-  const blog = new Blog({ title: 'this will not be saved' });
-  // eslint-disable-next-line no-underscore-dangle
-  const id = blog._id.toString();
-  return id;
-};
-
-module.exports = { initialBlogs, createNonExistingId, initialUsers };
+module.exports = { initialBlogs, initialUsers };

@@ -1,6 +1,5 @@
-/* eslint-disable no-await-in-loop */
-/* eslint-disable no-restricted-syntax */
-/* eslint-disable no-param-reassign */
+// HTTP POST tests have been fixed to work with user autentication.
+
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const supertest = require('supertest');
@@ -16,12 +15,18 @@ beforeEach(async () => {
   await Blog.insertMany(helper.initialBlogs);
   await User.deleteMany({});
   // Hash the passwords of initial users
-  for (const user of helper.initialUsers) {
+  const hashedUserPromises = helper.initialUsers.map(async user => {
     const passwordHash = await bcrypt.hash(user.password, 10);
-    user.passwordHash = passwordHash;
-    delete user.password;
-  }
-  await User.insertMany(helper.initialUsers);
+    return (
+      {
+        username: user.username,
+        name: user.name,
+        passwordHash,
+        _id: user._id,
+      });
+  });
+  const hashedUsers = await Promise.all(hashedUserPromises);
+  await User.insertMany(hashedUsers);
 });
 
 const loginAndGetToken = async (username, password) => {
@@ -49,14 +54,14 @@ describe('Testing HTTP GET /api/blogs', () => {
 
 describe('Testing HTTP POST /api/blogs', () => {
   test('Adding a valid blog works correctly', async () => {
+    const user = helper.initialUsers[0];
+    const token = await loginAndGetToken(user.username, user.password);
     const newBlog = {
       title: 'Nice blogpost',
       author: 'Me',
       url: 'https://niceplace.com',
       likes: 11,
     };
-    const user = helper.initialUsers[0];
-    const token = await loginAndGetToken(user.username, 'test1password');
     await api.post('/api/blogs')
       .send(newBlog)
       .set('Authorization', `Bearer ${token}`)
@@ -69,6 +74,8 @@ describe('Testing HTTP POST /api/blogs', () => {
     expect(titles).toContain('Nice blogpost');
   });
   test('Trying to add blog without title or url results to 400 bad request', async () => {
+    const user = helper.initialUsers[0];
+    const token = await loginAndGetToken(user.username, user.password);
     const withoutTitle = {
       author: 'Me',
       url: 'https://niceplace.com',
@@ -88,26 +95,40 @@ describe('Testing HTTP POST /api/blogs', () => {
       await api
         .post('/api/blogs')
         .send(blog)
+        .set('Authorization', `Bearer ${token}`)
         .expect(400);
     }));
   });
-});
+  test('default value for likes is zero', async () => {
+    const user = helper.initialUsers[0];
+    const token = await loginAndGetToken(user.username, user.password);
+    const newBlog = {
+      title: 'Blog without likes',
+      author: 'some guy',
+      url: 'https://niceplace.com',
+    };
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(201)
+      .expect('Content-Type', /application\/json/);
 
-test('default value for likes is zero', async () => {
-  const validId = await helper.createNonExistingId();
-  const newBlog = {
-    title: 'Blog without likes',
-    author: 'some guy',
-    url: 'https://niceplace.com',
-    _id: validId,
-  };
-  await api.post('/api/blogs')
-    .send(newBlog)
-    .expect(201)
-    .expect('Content-Type', /application\/json/);
-
-  const newBlogFromDB = await Blog.findById(validId);
-  expect(newBlogFromDB.likes).toEqual(0);
+    const newBlogFromDB = await Blog.findOne({ title: 'Blog without likes' });
+    expect(newBlogFromDB.likes).toEqual(0);
+  });
+  test('Adding a blog does not work without a token', async () => {
+    const newBlog = {
+      title: 'Nice blogpost',
+      author: 'Me',
+      url: 'https://niceplace.com',
+      likes: 11,
+    };
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(401);
+  });
 });
 
 describe('Testing HTTP DELETE', () => {
