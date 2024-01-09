@@ -7,4 +7,4 @@ This is a backend for blog list app, that allows users to save information about
 Backend allows user administration and implements support for token-based authentication.
 Server uses Node.js, Express and MongoDB and implements a RESTful API to be used by frontend.
 
-Frontendfor the app is here: https://github.com/ttaiv/fullstack-bloglist-frontend
+Frontend for the app is here: https://github.com/ttaiv/fullstack-bloglist-frontend
