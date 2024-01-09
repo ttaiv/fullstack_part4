@@ -4,4 +4,5 @@ Main course repository: https://github.com/ttaiv/fullstack
 Course materials: https://fullstackopen.com/en/
 
 This is a backend for blog list app, that allows users to save information about interesting blogs and upvote blogs saved by others.  
-App uses Node.js, Express and MongoDB and implements a RESTful API to be used by frontend.
+Backend allows user administration and implements support for token-based authentication.
+Server uses Node.js, Express and MongoDB and implements a RESTful API to be used by frontend.
